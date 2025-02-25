@@ -1,0 +1,50 @@
+@import 'tailwindcss';
+
+input {
+  &.error {
+    @apply outline-red-500 outline;
+  }
+}
+
+@layer base {
+  button {
+    @apply cursor-pointer text-sgreen;
+
+    &:disabled {
+      @apply cursor-not-allowed;
+    }
+  }
+
+  a {
+    @apply cursor-pointer text-sgreen;
+  }
+
+  h1 {
+    @apply text-5xl mb-8;
+  }
+
+  h2 {
+    @apply text-4xl mb-6;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    @apply text-sgreen;
+  }
+}
+
+@theme {
+  --color-sgreen: #1db954;
+  --color-sblack: #191414;
+}
+
+@layer components {
+  .albums-list {
+    li {
+      cursor: pointer;
+    }
+  }
+}

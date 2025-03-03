@@ -47,4 +47,10 @@ input {
       cursor: pointer;
     }
   }
+
+  .button {
+    @apply border border-sgreen rounded-lg px-4 py-2 
+      hover:opacity-80
+      lg:w-full lg:max-w-[180px];
+  }
 }

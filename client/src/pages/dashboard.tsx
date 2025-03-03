@@ -11,11 +11,11 @@ const Dashboard = () => {
   return (
     <DashboardContextProvider>
       <h1 className="text-center">Your top albums</h1>
-      <div className="flex flex-col items-center md:flex-row">
+      <div className="flex items-stretch flex-col items-center md:flex-row md:gap-5">
         <div className="w-4/5">
           <DashboardContent />
         </div>
-        <div>
+        <div className="flex-1">
           <DashboardTools />
         </div>
       </div>

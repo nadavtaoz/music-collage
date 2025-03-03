@@ -1,19 +1,9 @@
 import { useContext, useEffect, useState } from 'react';
 import { DashboardContext } from '../../../context/dashboard-context';
-import { Album } from '../../../interfaces/music';
 
 export default function DashboardContent() {
   const dashboardContext = useContext(DashboardContext);
-  const [displayedAlbums, setDisplayedAlbums] = useState<Album[]>(
-    dashboardContext?.albums ?? []
-  );
   const [draggedElement, setDraggedElement] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (dashboardContext?.albums && dashboardContext.albums.length) {
-      setDisplayedAlbums(dashboardContext.albums);
-    }
-  }, [dashboardContext]);
 
   const handleDragStart = (index: number) => {
     setDraggedElement(index);
@@ -24,26 +14,24 @@ export default function DashboardContent() {
   };
 
   const handleDrop = (index: number) => {
-    if (draggedElement === null || draggedElement === index) return;
+    if (
+      draggedElement === null ||
+      draggedElement === index ||
+      !dashboardContext
+    )
+      return;
 
-    // Swap images
-    const newDisplayedAlbums = [...displayedAlbums];
-    [newDisplayedAlbums[draggedElement], newDisplayedAlbums[index]] = [
-      newDisplayedAlbums[index],
-      newDisplayedAlbums[draggedElement],
-    ];
-
-    setDisplayedAlbums(newDisplayedAlbums);
+    dashboardContext.swapDisplayedAlbums(index, draggedElement);
     setDraggedElement(null);
   };
 
-  if (!displayedAlbums.length) {
+  if (!dashboardContext?.displayedAlbums.length) {
     return <h2>No albums yet...</h2>;
   }
 
   return (
     <ul className="albums-list grid grid-cols-3 gap-1 md:grid-cols-4">
-      {displayedAlbums.map((a, index) => {
+      {dashboardContext?.displayedAlbums.map((a, index) => {
         return (
           <li
             key={a.name}

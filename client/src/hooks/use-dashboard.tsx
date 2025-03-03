@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { isTrackArray, Track } from '../interfaces/music';
 import StorageService from '../services/storage-service';
 
-export default function useDashboard(): [boolean, Track[]] {
+export default function useDashboard(): [boolean, Track[], () => void] {
   const navigate = useNavigate();
   const [tokenError, setTokenError] = useState<boolean>(false);
   const [tracks, setTracks] = useState<Track[]>([]);
@@ -22,23 +22,27 @@ export default function useDashboard(): [boolean, Track[]] {
     },
   };
 
-  // Get the user's top tracks from api
-  useEffect(() => {
-    async function callApi() {
-      const result = await apiService.getTopMusic();
+  async function callApi() {
+    const result = await apiService.getTopMusic();
 
-      if (Object.values(APIErrorCodes).includes(result as APIErrorCodes)) {
-        const cb = errorHandlers[result as APIErrorCodes];
-        cb();
-        return;
-      }
-
-      if (isTrackArray(result)) {
-        setTracks(result);
-        StorageService.storeUserTopTracks(result);
-      }
+    if (Object.values(APIErrorCodes).includes(result as APIErrorCodes)) {
+      const cb = errorHandlers[result as APIErrorCodes];
+      cb();
+      return;
     }
 
+    if (isTrackArray(result)) {
+      setTracks(result);
+      StorageService.storeUserTopTracks(result);
+    }
+  }
+
+  async function refreshFromAPI() {
+    callApi();
+  }
+
+  // Get the user's top tracks from api
+  useEffect(() => {
     const tracks = StorageService.getUserTopTracks();
     if (!tracks) {
       callApi();
@@ -47,5 +51,5 @@ export default function useDashboard(): [boolean, Track[]] {
     }
   }, []);
 
-  return [tokenError, tracks];
+  return [tokenError, tracks, refreshFromAPI];
 }

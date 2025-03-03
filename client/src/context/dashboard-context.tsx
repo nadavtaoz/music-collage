@@ -1,10 +1,20 @@
-import { createContext, ReactNode, useContext, useReducer } from 'react';
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useReducer,
+} from 'react';
 import { Album } from '../interfaces/music';
 import useDashboard from '../hooks/use-dashboard';
 import SpotifyModal from '../components/pages/all/spotify-modal';
 
 export type DashboardState = {
   albums: Album[];
+  displayedAlbums: Album[];
+  swapDisplayedAlbums: (target: number, source: number) => void;
+  refreshFromSpotify: () => void;
+  refreshAlbums: () => void;
 };
 
 type DashboardContextValue = DashboardState & {
@@ -19,10 +29,69 @@ type DashboardContextProviderProps = {
   children: ReactNode;
 };
 
+type DisplayedAlbumsState = {
+  displayedAlbums: Album[];
+};
+
+type SetDisplayedAlbumsAction = {
+  type: 'SET_ALBUMS';
+  payload: {
+    albums: Album[];
+  };
+};
+
+type RefreshAlbumsAction = {
+  type: 'REFRESH_ALBUMS';
+};
+
+type SwapAlbumsAction = {
+  type: 'SWAP_ALBUMS';
+  payload: {
+    target: number;
+    source: number;
+  };
+};
+
+type DisplayedAlbumsAction =
+  | RefreshAlbumsAction
+  | SwapAlbumsAction
+  | SetDisplayedAlbumsAction;
+
+function displayedAlbumsReducer(
+  state: DisplayedAlbumsState,
+  action: DisplayedAlbumsAction
+): DisplayedAlbumsState {
+  if (action.type === 'SET_ALBUMS') {
+    const { albums } = action.payload;
+    return {
+      ...state,
+      displayedAlbums: albums,
+    };
+  }
+
+  if (action.type === 'SWAP_ALBUMS') {
+    const { target, source } = action.payload;
+
+    // Swap images
+    const newDisplayedAlbums = [...state.displayedAlbums];
+    [newDisplayedAlbums[target], newDisplayedAlbums[source]] = [
+      newDisplayedAlbums[source],
+      newDisplayedAlbums[target],
+    ];
+
+    return {
+      ...state,
+      displayedAlbums: newDisplayedAlbums,
+    };
+  }
+
+  return state;
+}
+
 export default function DashboardContextProvider({
   children,
 }: DashboardContextProviderProps) {
-  const [tokenError, tracks] = useDashboard();
+  const [tokenError, tracks, refreshFromAPI] = useDashboard();
 
   const createAlbums = (): Album[] => {
     const albums = tracks.map((t) => t.album);
@@ -30,8 +99,48 @@ export default function DashboardContextProvider({
     return albums.filter((a) => !seen.has(a.name) && seen.add(a.name));
   };
 
+  const albums = createAlbums();
+  const [displayedAlbumsState, displayedAlbumsDispatch] = useReducer(
+    displayedAlbumsReducer,
+    {
+      displayedAlbums: albums,
+    }
+  );
+
+  useEffect(() => {
+    if (tracks.length) {
+      displayedAlbumsDispatch({
+        type: 'SET_ALBUMS',
+        payload: {
+          albums: createAlbums(),
+        },
+      });
+    }
+  }, [tracks]);
+
   const ctx: DashboardState = {
-    albums: createAlbums(),
+    albums: [...albums],
+    displayedAlbums: displayedAlbumsState.displayedAlbums,
+    refreshFromSpotify() {
+      refreshFromAPI();
+    },
+    refreshAlbums() {
+      displayedAlbumsDispatch({
+        type: 'SET_ALBUMS',
+        payload: {
+          albums: createAlbums(),
+        },
+      });
+    },
+    swapDisplayedAlbums(target: number, source: number) {
+      displayedAlbumsDispatch({
+        type: 'SWAP_ALBUMS',
+        payload: {
+          target,
+          source,
+        },
+      });
+    },
   };
 
   if (tokenError) {

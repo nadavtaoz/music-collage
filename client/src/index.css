@@ -46,6 +46,12 @@ input {
     li {
       cursor: pointer;
     }
+
+    &.delete-mode {
+      li {
+        cursor: not-allowed;
+      }
+    }
   }
 
   .button {

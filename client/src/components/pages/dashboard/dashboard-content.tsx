@@ -1,9 +1,24 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import { DashboardContext } from '../../../context/dashboard-context';
 
-export default function DashboardContent() {
+type DashboardContentProps = {
+  deleteMode: boolean;
+  setDeleteMode: (mode: boolean) => void;
+};
+
+export default function DashboardContent({
+  deleteMode,
+  setDeleteMode,
+}: DashboardContentProps) {
   const dashboardContext = useContext(DashboardContext);
   const [draggedElement, setDraggedElement] = useState<number | null>(null);
+
+  const handleClick = (index: number) => {
+    if (deleteMode) {
+      dashboardContext?.deleteAlbum(index);
+      setDeleteMode(false);
+    }
+  };
 
   const handleDragStart = (index: number) => {
     setDraggedElement(index);
@@ -17,7 +32,8 @@ export default function DashboardContent() {
     if (
       draggedElement === null ||
       draggedElement === index ||
-      !dashboardContext
+      !dashboardContext ||
+      deleteMode
     )
       return;
 
@@ -30,7 +46,11 @@ export default function DashboardContent() {
   }
 
   return (
-    <ul className="albums-list grid grid-cols-3 gap-1 md:grid-cols-4">
+    <ul
+      className={`albums-list grid grid-cols-3 gap-1 md:grid-cols-4 2xl:grid-cols-5 ${
+        deleteMode && 'delete-mode'
+      }`}
+    >
       {dashboardContext?.displayedAlbums.map((a, index) => {
         return (
           <li
@@ -38,6 +58,7 @@ export default function DashboardContent() {
             draggable="true"
             onDrag={() => handleDragStart(index)}
             onDrop={() => handleDrop(index)}
+            onClick={() => handleClick(index)}
             onDragOver={handleDragOver}
           >
             <img src={a.images && a.images[1].url} />

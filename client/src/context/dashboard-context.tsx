@@ -1,10 +1,4 @@
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useReducer,
-} from 'react';
+import { createContext, ReactNode, useEffect, useReducer } from 'react';
 import { Album } from '../interfaces/music';
 import useDashboard from '../hooks/use-dashboard';
 import SpotifyModal from '../components/pages/all/spotify-modal';
@@ -12,6 +6,7 @@ import SpotifyModal from '../components/pages/all/spotify-modal';
 export type DashboardState = {
   albums: Album[];
   displayedAlbums: Album[];
+  deleteAlbum: (target: number) => void;
   swapDisplayedAlbums: (target: number, source: number) => void;
   refreshFromSpotify: () => void;
   refreshAlbums: () => void;
@@ -44,6 +39,13 @@ type RefreshAlbumsAction = {
   type: 'REFRESH_ALBUMS';
 };
 
+type DeleteAlbumAction = {
+  type: 'DELETE_ALBUM';
+  payload: {
+    target: number;
+  };
+};
+
 type SwapAlbumsAction = {
   type: 'SWAP_ALBUMS';
   payload: {
@@ -55,6 +57,7 @@ type SwapAlbumsAction = {
 type DisplayedAlbumsAction =
   | RefreshAlbumsAction
   | SwapAlbumsAction
+  | DeleteAlbumAction
   | SetDisplayedAlbumsAction;
 
 function displayedAlbumsReducer(
@@ -78,6 +81,18 @@ function displayedAlbumsReducer(
       newDisplayedAlbums[source],
       newDisplayedAlbums[target],
     ];
+
+    return {
+      ...state,
+      displayedAlbums: newDisplayedAlbums,
+    };
+  }
+
+  if (action.type === 'DELETE_ALBUM') {
+    const { target } = action.payload;
+    const newDisplayedAlbums = state.displayedAlbums.filter(
+      (_album, index) => index !== target
+    );
 
     return {
       ...state,
@@ -123,6 +138,14 @@ export default function DashboardContextProvider({
     displayedAlbums: displayedAlbumsState.displayedAlbums,
     refreshFromSpotify() {
       refreshFromAPI();
+    },
+    deleteAlbum(target: number) {
+      displayedAlbumsDispatch({
+        type: 'DELETE_ALBUM',
+        payload: {
+          target,
+        },
+      });
     },
     refreshAlbums() {
       displayedAlbumsDispatch({

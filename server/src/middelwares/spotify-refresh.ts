@@ -32,14 +32,13 @@ const spotifyRefreshMiddleware = async (
       throw new AppError('Email not found', 401, req.body);
     }
 
-    if (!user.spotifyToken || !user.tokenTime) {
+    if (!user.spotifyToken || !user.tokenTime || !user.refreshToken) {
       throw new AppError('User has no Spotify token', 401, req.body);
     }
 
     const diff = new Date().getTime() - user.tokenTime.getTime();
 
     if (diff / 1000 > SPOTIFY_EXP_IN_SECONDS) {
-      console.log(1);
       const response = await axios.post(
         SPOTIFY_REFRESH_URL,
         {

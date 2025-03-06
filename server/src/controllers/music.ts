@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import User from '../models/user';
+import { validationResult } from 'express-validator';
+
 import AppError from '../classes/app-error';
 import axios from 'axios';
 import { UserRequest } from '../middelwares/spotify-refresh';
@@ -29,6 +30,60 @@ type SPOTIFY_TOP_RESPONSE = {
   previous: string | undefined;
   offset: number;
   total: number;
+};
+
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
+const searchArtist = async (
+  req: UserRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      throw new AppError('User does not exists');
+    }
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      throw new AppError('Validation Error', 400, errors.array());
+    }
+
+    const { q } = req.query;
+    const spotifyToken = user.spotifyToken;
+
+    const response = await axios.get(
+      SPOTIFY_URL +
+        `v1/search?q=${encodeURIComponent(q as string)}&type=artist`,
+      {
+        headers: {
+          Authorization: 'Bearer ' + spotifyToken,
+        },
+      }
+    );
+    res.status(200).json(response.data);
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      const error = AppError.handleAxiosError(
+        err,
+        'Spotify API request failed'
+      );
+      return next(error);
+    }
+
+    const error = err as AppError;
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+
+    next(error);
+  }
 };
 
 /**
@@ -76,13 +131,10 @@ const getTopMusic = async (
     res.status(200).json(tracks);
   } catch (err) {
     if (axios.isAxiosError(err)) {
-      const statusCode = err.response?.status || 500;
-      const message =
-        err.response?.data?.error?.message ||
-        err.message ||
-        'Spotify API request failed';
-
-      const error = new AppError(message, statusCode, err.response?.data);
+      const error = AppError.handleAxiosError(
+        err,
+        'Spotify API request failed'
+      );
       return next(error);
     }
 
@@ -95,6 +147,6 @@ const getTopMusic = async (
   }
 };
 
-const musicController = { getTopMusic };
+const musicController = { getTopMusic, searchArtist };
 
 export default musicController;

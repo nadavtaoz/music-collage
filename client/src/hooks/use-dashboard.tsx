@@ -14,6 +14,7 @@ export default function useDashboard(): [boolean, Track[], () => void] {
     [APIErrorCodes.TOKEN]: () => {
       setTokenError(true);
       userStore.deleteSpotifyToken();
+      navigate('/');
     },
     [APIErrorCodes.GENERAL]: () => console.log('A general error occurred'),
     [APIErrorCodes.JWT]: () => {

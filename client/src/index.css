@@ -15,6 +15,10 @@ input {
     }
   }
 
+  input {
+    @apply rounded-lg px-4 py-2;
+  }
+
   a {
     @apply cursor-pointer text-sgreen;
   }
@@ -58,5 +62,13 @@ input {
     @apply border border-sgreen rounded-lg px-4 py-2 
       hover:opacity-80
       lg:w-full lg:max-w-[180px];
+
+    &.inverted {
+      @apply bg-sgreen text-white;
+    }
+  }
+
+  .text-field {
+    @apply border border-sgreen lg:w-full lg:max-w-[180px];
   }
 }

@@ -5,6 +5,7 @@ import DashboardContent from '../components/pages/dashboard/dashboard-content';
 import DashboardTools from '../components/pages/dashboard/dashboard-tools';
 import DashboardContextProvider from '../context/dashboard-context';
 import { useState } from 'react';
+import AddArtistsModal from '../components/pages/dashboard/add-artists-modal';
 
 const Dashboard = () => {
   const [deleteMode, setDeleteMode] = useState<boolean>(false);
@@ -38,6 +39,8 @@ const Dashboard = () => {
           />
         </div>
       </div>
+
+      <AddArtistsModal />
     </DashboardContextProvider>
   );
 };

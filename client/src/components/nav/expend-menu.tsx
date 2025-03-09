@@ -1,7 +1,16 @@
-export default function ExpendMenu() {
+type ExpendMenuProps = {
+  setMenuOpen: (isOpen: boolean) => void;
+};
+
+export default function ExpendMenu({ setMenuOpen }: ExpendMenuProps) {
+  const handlieClick = () => {
+    setMenuOpen(true);
+  };
+
   return (
     <div className="flex lg:hidden">
       <button
+        onClick={handlieClick}
         type="button"
         title="Open main menu"
         className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"

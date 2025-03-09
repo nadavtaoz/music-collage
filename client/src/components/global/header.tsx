@@ -3,14 +3,20 @@ import { useLocation } from 'react-router';
 
 import { userStore } from '../../stores/user-store';
 import ProfileBadge from './profile-badge';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { debounce } from '../../util/debounce';
 import StorageService from '../../services/storage-service';
 import ExpendMenu from '../nav/expend-menu';
 import ParentNavItem from '../nav/parent-nav-item';
 import AppErrorMessage from './app-error-message';
+import MobileMenu from './mobile-menu';
 
-const generalLinks = [
+export type LinkType = {
+  label: string;
+  link: string;
+};
+
+const generalLinks: LinkType[] = [
   {
     label: 'Dashboard',
     link: '/dashboard',
@@ -28,6 +34,7 @@ const generalLinks = [
 const Header = observer(() => {
   // const location = window.location.pathname;
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   const logoutDebounce = useCallback(
     debounce(() => {
@@ -45,7 +52,7 @@ const Header = observer(() => {
       >
         {userStore.isLoggedIn && <ProfileBadge />}
 
-        <ExpendMenu />
+        <ExpendMenu setMenuOpen={setMobileMenuOpen} />
 
         <div className="hidden lg:flex lg:gap-x-12">
           <div className="relative">
@@ -56,7 +63,7 @@ const Header = observer(() => {
             <a
               key={gl.label}
               href={gl.link}
-              className="text-sm/6 font-semibold"
+              className="text-sm/6 font-semibold hover:underline"
             >
               {gl.label}
             </a>
@@ -77,6 +84,11 @@ const Header = observer(() => {
         )}
       </nav>
 
+      <MobileMenu
+        links={generalLinks}
+        isOpen={mobileMenuOpen}
+        setMenuOpen={setMobileMenuOpen}
+      />
       <AppErrorMessage />
     </header>
   );

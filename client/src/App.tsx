@@ -11,7 +11,7 @@ import Footer from './components/global/footer';
 
 const App = () => {
   return (
-    <div className="container mx-auto min-h-screen">
+    <div className="lg:container mx-auto min-h-screen">
       <Router>
         <Header />
         <Routes>
